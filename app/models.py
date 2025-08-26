@@ -38,6 +38,8 @@ class Card(db.Model):
     account = db.relationship("HSAAccount", back_populates="cards")
 
 class Transaction(db.Model):
+    __tablename__ = "transactions"
+
     id = db.Column(db.String(8), primary_key=True, default=gen_id)
     account_id = db.Column(db.String(8), db.ForeignKey("hsa_account.id"), nullable=False)
     merchant = db.Column(db.String(120), nullable=False)

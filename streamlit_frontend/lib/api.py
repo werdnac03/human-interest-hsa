@@ -58,5 +58,7 @@ def list_cards(account_id: str) -> List[Dict[str, Any]]:
     return _request("GET", f"/cards/accounts/{account_id}/cards")
 
 # Transactions
-def list_transactions() -> List[Dict[str, Any]]:
-    return _request("GET", "/transactions")
+def list_transactions(payload: Dict[str, Any]) -> List[Dict[str, Any]]:
+    return _request("GET", "/transactions", payload)
+def create_purchase(payload: Dict[str, Any]):
+    return _request("POST", "/transactions/purchase", payload)

@@ -88,7 +88,7 @@ st.session_state.sel_cards_by_hsa = sel_cards_by_hsa
 amount_dollars = st.number_input(
     "Deposit amount (USD)",
     min_value=0.01,
-    step=0.01,
+    step=1.00,
     format="%.2f",
 )
 
