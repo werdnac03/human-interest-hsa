@@ -11,9 +11,6 @@ def hash_password(pw: str) -> str:
     # pbkdf2:sha256 with per-password random salt
     return generate_password_hash(pw, method="pbkdf2:sha256", salt_length=16)
 
-
-
-
 @bp.post("/create")
 def create_account():
     name = request.json.get("name", "Demo User")
@@ -37,10 +34,17 @@ def create_account():
 def login():
     email = request.json.get("email").strip().lower()
     password = request.json.get("password", "")
-    
-    
     user = User.query.filter_by(email=email).first()
     if not user or not check_password_hash(user.password_hash, password):
         return jsonify({"ok": False, "error": "Invalid credentials"}), 401
 
     return jsonify({"ok": True, "name": user.name, "id": user.id, "email": user.email}), 200
+
+@bp.get("")
+def list_accounts():  # handles GET /accounts
+    user_id = request.json.get("id")
+    rows = HSAAccount.query.filter_by(user_id=user_id).all()
+    data = [{"id": a.id, "user_id": a.user_id, "balance_cents": a.balance_cents or 0} for a in rows]
+    return data
+
+    

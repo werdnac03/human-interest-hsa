@@ -8,9 +8,9 @@ def deposit(account_id: str, amount_cents: int):
     db.session.commit()
     return acct
 
-def issue_card(account_id: str):
+def issue_card(account_id: str, nickname: str, last4: str):
     acct = HSAAccount.query.get_or_404(account_id)
-    card = Card(account_id=acct.id, last4="0000") #0000 as a dummy last4
+    card = Card(account_id=acct.id, nickname = nickname, last4=last4) 
     db.session.add(card)
     db.session.commit()
     return card

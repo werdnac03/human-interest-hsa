@@ -30,6 +30,7 @@ class Card(db.Model):
     id = db.Column(db.String(8), primary_key=True, default=gen_id)
     account_id = db.Column(db.String(8), db.ForeignKey("hsa_account.id"), nullable=False)
     last4 = db.Column(db.String(4), nullable=False)
+    nickname = db.Column(db.String(80), unique=True, default="defualt card")
     active = db.Column(db.Boolean, default=True)
 
     # many-to-one back to HSAAccount

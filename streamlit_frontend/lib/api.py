@@ -6,7 +6,7 @@ from dotenv import load_dotenv
 from typing import Any, Dict, List, Optional
 
 load_dotenv()
-BASE = os.getenv("API_URL", "http://localhost:5000")
+API_URL = os.getenv("API_URL", "http://localhost:5000")
 
 class APIError(RuntimeError):
     def __init__(self, message, status=None, payload=None):
@@ -19,7 +19,7 @@ class APIError(RuntimeError):
         return f"APIError(status={self.status}, message={self.message})"
 
 def _request(method: str, path: str, json: Optional[Dict[str, Any]] = None) -> Any:
-    url = BASE.rstrip("/") + path
+    url = API_URL.rstrip("/") + path
     r = requests.request(method, url, json=json, timeout=15)
     if not r.ok:
         try:
@@ -38,14 +38,18 @@ def open_account(payload: Dict[str, Any]) -> Dict[str, Any]:
     return _request("POST", "/accounts/create", json=payload)
 def login_account(payload: Dict[str, Any]) -> Dict[str, Any]:
     return _request("POST", "/accounts/login", json=payload)
+def list_accounts(payload: Dict[str, Any]) -> List[Dict[str, Any]]:
+    return _request("GET", "/accounts", json=payload)
 
 # Funding
-def create_contribution(payload: Dict[str, Any]) -> Dict[str, Any]:
-    return _request("POST", "/funding", json=payload)
+def create_deposit(payload: Dict[str, Any]) -> Dict[str, Any]:
+    return _request("POST", "/funding/deposit", json=payload)
 
 # Cards
 def issue_card(payload: Dict[str, Any]) -> Dict[str, Any]:
     return _request("POST", "/cards", json=payload)
+def list_cards(account_id: str) -> List[Dict[str, Any]]:
+    return _request("GET", f"/cards/accounts/{account_id}/cards")
 
 # Transactions
 def list_transactions() -> List[Dict[str, Any]]:
