@@ -12,6 +12,10 @@ def fmt_cents(cents: int | None) -> str:
 ensure()
 st.title("Initiate Purchase")
 
+if not st.session_state.account:
+    st.warning("Open an account first.")
+    st.stop()
+
 # --- Load HSA accounts for this user/base account ----------------------------
 with st.spinner("Loading accounts..."):
     try:
@@ -80,7 +84,7 @@ if submit:
                     "success",
                     [
                     f"Approved: {merchant} for \${amount_dollars:,.2f} ",
-                    f"(New balance: {fmt_cents(remaining)}"
+                    f"(New balance: {fmt_cents(remaining)})"
                     ]
                 )
             else:

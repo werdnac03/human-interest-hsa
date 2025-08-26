@@ -23,7 +23,6 @@ with st.spinner("Loading accounts..."):
 
 if not accounts:
     st.info("No HSA accounts found. Create one on the Accounts page.")
-    st.stop()
 
 
 for a in accounts:
@@ -37,7 +36,6 @@ for a in accounts:
 st.title("Open HSA Account")
 
 with st.form("hsa_account_form", clear_on_submit=False):
-    st.warning(st.session_state.account)
     hsa_account_name = st.text_input("Account name")
     submitted_hsa_account = st.form_submit_button("Create Account")
 
