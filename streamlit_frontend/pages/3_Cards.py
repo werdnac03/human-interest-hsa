@@ -2,7 +2,7 @@
 import re
 import streamlit as st
 from lib.state import ensure
-from lib.api import issue_card, list_cards, list_accounts, APIError
+from lib.api import issue_card, list_cards, list_hsa_accounts, APIError
 
 ensure()
 st.title("Card Issuance")
@@ -15,7 +15,7 @@ if not st.session_state.account:
 # 1) Load accounts
 with st.spinner("Loading accounts..."):
     try:
-        accounts = list_accounts(st.session_state.account)  # expects a list[dict]: {id, balance_cents, ...}
+        accounts = list_hsa_accounts(st.session_state.account)  # expects a list[dict]: {id, balance_cents, ...}
     except APIError as e:
         st.error(f"Failed to load accounts: {e}")
         st.stop()
@@ -25,7 +25,7 @@ if not accounts:
     st.stop()
 
 acct_label_to_id = {
-    f"{a.get('id')}": a["id"]
+    f"{a.get('acct_name')}": a["id"]
     for a in accounts
 }
 acct_label = st.selectbox("Choose account", list(acct_label_to_id.keys()))
@@ -37,7 +37,7 @@ def digits_only(s: str) -> str:
     return re.sub(r"\D+", "", s or "")
 
 with st.form("card_form"):
-    st.write(f"Account: **{acc.get('id', '')}** — {acc.get('name','')}")
+    st.write(f"Account: **{acc.get('user_id')}** — {acc.get('name','')}")
     nickname = st.text_input("Card nickname", value="Primary HSA Card")
 
     # Masked input

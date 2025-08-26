@@ -5,46 +5,31 @@ from sqlalchemy.exc import IntegrityError
 
 bp = Blueprint("accounts", __name__)
 
-from werkzeug.security import generate_password_hash
-from werkzeug.security import check_password_hash
-def hash_password(pw: str) -> str:
-    # pbkdf2:sha256 with per-password random salt
-    return generate_password_hash(pw, method="pbkdf2:sha256", salt_length=16)
 
 @bp.post("/create")
 def create_account():
-    name = request.json.get("name", "Demo User")
-    email = request.json.get("email").strip().lower()
-    password = request.json.get("password", "")
-    password_hash = hash_password(password)
+    hsa_name = request.json.get("hsa_account_name", "Default account")
+    acct = request.json.get("account")
+    existing = HSAAccount.query.filter_by(user_id=acct.get("user_id"), name=hsa_name).first()
+    if existing:
+        return jsonify({"ok": False, "errors": ["HSA-Account name already in use"]})
 
-    user = User(name=name, email=email, password_hash=password_hash)
-    acct = HSAAccount(user = user, balance_cents=0)
-    db.session.add_all([user, acct])
+    hsa_acct = HSAAccount(user_id=acct.get("user_id"), name=hsa_name, balance_cents=0)
+    db.session.add_all([hsa_acct])
 
     try:
         db.session.commit()
     except IntegrityError:
         db.session.rollback()
-        return jsonify({"ok": False, "errors": ["Email already registered"]}), 409
+        return jsonify({"ok": False, "errors": ["Some commit error"]}), 409
 
-    return jsonify({"ok": True, "name": user.name, "id": user.id, "email": user.email}), 200
-
-@bp.post("/login")
-def login():
-    email = request.json.get("email").strip().lower()
-    password = request.json.get("password", "")
-    user = User.query.filter_by(email=email).first()
-    if not user or not check_password_hash(user.password_hash, password):
-        return jsonify({"ok": False, "error": "Invalid credentials"}), 401
-
-    return jsonify({"ok": True, "name": user.name, "id": user.id, "email": user.email}), 200
+    return jsonify({"ok": True, "hsa_name": hsa_name}), 200
 
 @bp.get("")
-def list_accounts():  # handles GET /accounts
-    user_id = request.json.get("id")
+def list_hsa_accounts():  # handles GET /accounts
+    user_id = request.json.get("user_id")
     rows = HSAAccount.query.filter_by(user_id=user_id).all()
-    data = [{"id": a.id, "user_id": a.user_id, "balance_cents": a.balance_cents or 0} for a in rows]
+    data = [{"id": a.id, "user_id": a.user_id, "acct_name": a.name,"balance_cents": a.balance_cents or 0} for a in rows]
     return data
 
     

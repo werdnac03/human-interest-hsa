@@ -17,6 +17,7 @@ class User(db.Model):
 class HSAAccount(db.Model):
     id = db.Column(db.String(8), primary_key=True, default=gen_id)
     user_id = db.Column(db.String(8), db.ForeignKey("user.id"), nullable=False)
+    name = db.Column(db.String(80), nullable=False)
     balance_cents = db.Column(db.Integer, default=0)
 
     # many-to-one back to User

@@ -33,13 +33,19 @@ def _request(method: str, path: str, json: Optional[Dict[str, Any]] = None) -> A
         return r.json()
     return None
 
-# Accounts
+
+
+# Users
 def open_account(payload: Dict[str, Any]) -> Dict[str, Any]:
-    return _request("POST", "/accounts/create", json=payload)
+    return _request("POST", "/users/create", json=payload)
 def login_account(payload: Dict[str, Any]) -> Dict[str, Any]:
-    return _request("POST", "/accounts/login", json=payload)
-def list_accounts(payload: Dict[str, Any]) -> List[Dict[str, Any]]:
+    return _request("POST", "/users/login", json=payload)
+
+# Accounts
+def list_hsa_accounts(payload: Dict[str, Any]) -> List[Dict[str, Any]]:
     return _request("GET", "/accounts", json=payload)
+def open_hsa_account(payload: Dict[str, Any]) -> Dict[str, Any]:
+    return _request("POST", "/accounts/create", json=payload)
 
 # Funding
 def create_deposit(payload: Dict[str, Any]) -> Dict[str, Any]:

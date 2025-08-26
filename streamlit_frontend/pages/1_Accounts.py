@@ -1,70 +1,60 @@
 # pages/1_Accounts.py
 import streamlit as st
 from lib.state import ensure
-from lib.api import open_account, login_account, APIError
+from lib.api import list_hsa_accounts, open_hsa_account, APIError
 
 ensure()
+st.title("View HSA Accounts")
+
+if not st.session_state.account:
+    st.warning("Open an account first.")
+    st.stop()
+
+def fmt_cents(cents: int) -> str:
+    return f"${cents/100:,.2f}"
+
+# 1) Load accounts
+with st.spinner("Loading accounts..."):
+    try:
+        accounts = list_hsa_accounts(st.session_state.account)  # expects a list[dict]: {id, balance_cents, ...}
+    except APIError as e:
+        st.error(f"Failed to load accounts: {e}")
+        st.stop()
+
+if not accounts:
+    st.info("No HSA accounts found. Create one on the Accounts page.")
+    st.stop()
+
+
+for a in accounts:
+    st.write(
+        f"**{a.get('acct_name','(unnamed)')}** — "
+        f"Balance: {fmt_cents(a.get('balance_cents', 0))}  "
+        f"(ID: {a['id']})"
+    )
+
+
 st.title("Open HSA Account")
 
-if st.session_state.get("account"):
-    acc = st.session_state.account
-    st.info(f"Account active! User: {acc.get('name')}")
-    col1, col2 = st.columns(2)
-    with col1:
-        if st.button("Log out / Reset"):
-            # Clear just the account (or st.session_state.clear() to wipe everything)
-            del st.session_state["account"]
-            st.rerun()
-    with col2:
-        st.info("You must log out/reset to create a different account.")
-    st.stop()
+with st.form("hsa_account_form", clear_on_submit=False):
+    st.warning(st.session_state.account)
+    hsa_account_name = st.text_input("Account name")
+    submitted_hsa_account = st.form_submit_button("Create Account")
 
-
-with st.form("account_form", clear_on_submit=False):
-    first = st.text_input("First name")
-    last  = st.text_input("Last name")
-    email = st.text_input("Email")
-    pw    = st.text_input("Password", type="password")
-    submitted_account = st.form_submit_button("Create Account")
-
-if submitted_account:
+if submitted_hsa_account:
     errs = []
-    if not first: errs.append("First name required")
-    if not last:  errs.append("Last name required")
-    if not email: errs.append("Email required")
-    if not pw: errs.append("Password required")
+    if not hsa_account_name: errs.append("Account name required")
 
     if errs:
         st.error("• " + "\n• ".join(errs))
     else:
         try:
-            payload = {"name": first + " " + last, "email": email, "password": pw}
-            acc = open_account(payload)
-            st.session_state.account = acc
-            st.success(f"Account created! User: {acc.get("name")}")
+            payload = {"hsa_account_name": hsa_account_name, "account": st.session_state.account}
+            hsa_acc = open_hsa_account(payload)
+            st.session_state.hsa_account = hsa_acc
+            st.success(f"HSA account created!")
             st.rerun()
         except APIError as e:
-            st.error(f"Failed to create account: {e}")
+            st.error(f"Failed to create HSA account: {e}")
     st.stop()
 
-with st.form("login_form", clear_on_submit=False):
-    email = st.text_input("Email")
-    pw    = st.text_input("Password", type="password")
-    submitted_login = st.form_submit_button("Login")
-
-if submitted_login:
-    errs = []
-    if not email: errs.append("Email required")
-    if not pw: errs.append("Password required")
-
-    if errs:
-        st.error("• " + "\n• ".join(errs))
-    else:
-        try:
-            payload = {"email": email, "password": pw}
-            acc = login_account(payload)
-            st.session_state.account = acc
-            st.success(f"Account Logged In! User: {acc.get("name")}")
-            st.rerun()
-        except APIError as e:
-            st.error(f"Failed to Log In: {e}")
