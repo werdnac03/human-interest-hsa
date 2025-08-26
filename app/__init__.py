@@ -1,0 +1,22 @@
+from flask import Flask
+from .config import Config
+from .extensions import db, migrate
+from .blueprints.accounts import bp as accounts_bp
+from .blueprints.cards import bp as cards_bp
+from .blueprints.transactions import bp as tx_bp
+
+def create_app():
+    app = Flask(__name__, instance_relative_config=True)
+    app.config.from_object(Config)
+    db.init_app(app)
+    migrate.init_app(app, db)
+
+    app.register_blueprint(accounts_bp, url_prefix="/accounts")
+    app.register_blueprint(cards_bp, url_prefix="/cards")
+    app.register_blueprint(tx_bp, url_prefix="/transactions")
+
+    @app.get("/")
+    def index():
+        return "HSA"
+
+    return app
