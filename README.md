@@ -10,4 +10,6 @@ python -c "from app import create_app; from app.extensions import db; app=create
 
 # 3) Run
 python run.py
+or
+flask run
 # App at http://127.0.0.1:5000
